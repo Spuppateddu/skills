@@ -11,6 +11,7 @@ it can run.
 | Skill | What it does |
 |-------|--------------|
 | [`api-branch-diff`](./api-branch-diff/) | Compare an HTTP API's response across two git branches to prove a refactor didn't change the payload. Tech-agnostic — curl against any running backend. |
+| [`branch-review`](./branch-review/) | Code-review a git diff (uncommitted/unpushed work, or two branches you pick) for security, type safety, slow/N+1 queries, duplication, comment cruft, and missing tests. Tech-agnostic; findings graded LOW→CRITICAL. |
 
 **Supported OS:** Linux and macOS. Requirements: `bash`, `git`, `curl`, `jq`
 (`apt install jq` / `brew install jq`). The scripts avoid bash 4+ features, so
