@@ -12,6 +12,8 @@ it can run.
 |-------|--------------|
 | [`api-branch-diff`](./api-branch-diff/) | Compare an HTTP API's response across two git branches to prove a refactor didn't change the payload. Tech-agnostic — curl against any running backend. |
 | [`branch-review`](./branch-review/) | Code-review a git diff (uncommitted/unpushed work, or two branches you pick) for security, type safety, slow/N+1 queries, duplication, comment cruft, and missing tests. Tech-agnostic; findings graded LOW→CRITICAL. |
+| [`plan-write`](./plan-write/) | Write an implementation plan as markdown for **another AI agent** to execute. Surveys the repos, interrogates you until nothing is ambiguous, then emits phases of tasks with explicit states, exact paths and exact verify commands. Pairs with `plan-execute`. |
+| [`plan-execute`](./plan-execute/) | Implement a markdown plan under ground rules: normalize it into a tracked checklist, build it task by task in TDD order, tick each task off in the file, run that project's tests. Strictly no invented scope. Detects PHP, Python, JS/TS, Go, Rust, Ruby across monorepos and multi-repo folders (`backend/` + `frontend/`). |
 
 **Supported OS:** Linux and macOS. Requirements: `bash`, `git`, `curl`, `jq`
 (`apt install jq` / `brew install jq`). The scripts avoid bash 4+ features, so
