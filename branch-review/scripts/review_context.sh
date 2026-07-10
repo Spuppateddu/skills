@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 #
-# Gather the git context a code review needs, tech-agnostic. Two modes:
+# Gather the git context a code review needs, tech-agnostic. Three modes:
 #
 #   review_context.sh state
 #       Report the current branch's working-tree and unpushed state so the
-#       caller can decide what to review (uncommitted work vs a branch diff).
+#       caller can decide what to review.
 #
-#   review_context.sh diff <base> <head>
-#       Emit the review target: changed-file stat + full patch of <head>
-#       relative to <base>. Uses a three-dot range (merge-base) so only the
-#       changes <head> introduces are shown, not unrelated drift on <base>.
-#       Pass --two-dot as a 4th arg to force a plain <base>..<head> range.
+#   review_context.sh branch [base]
+#       THE DEFAULT REVIEW TARGET. Emit everything the branch changed relative
+#       to <base> (auto-detected trunk when omitted): committed work, staged
+#       work, unstaged work, and untracked files — as one patch. This is what
+#       the branch would land, not just what it committed.
+#
+#   review_context.sh diff <base> <head> [--two-dot]
+#       Compare two arbitrary refs. Committed content only, by definition.
+#       Three-dot range (merge-base) by default; --two-dot forces <base>..<head>.
 #
 # Also prints whether the repo looks like it has a test suite, so the review
 # can flag missing tests only when tests are actually expected.
@@ -23,6 +27,9 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
   || { echo "ERROR: not inside a git repository" >&2; exit 1; }
 
 MODE="${1:-state}"
+
+# Untracked files above this size are listed but not dumped, to keep the patch sane.
+MAX_UNTRACKED_BYTES=200000
 
 # --- test-suite detection (heuristic, language-agnostic) -------------------
 detect_tests() {
@@ -63,11 +70,61 @@ detect_tests() {
   fi
 }
 
+# --- base detection --------------------------------------------------------
+# The trunk this branch forked from. Prefer origin's declared default branch,
+# then the usual names. If HEAD *is* the trunk, fall back to its upstream so
+# the review still covers unpushed commits.
+detect_base() {
+  cur="$(git rev-parse --abbrev-ref HEAD)"
+  cand=""
+
+  if ref="$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null)"; then
+    cand="${ref#refs/remotes/}"
+  fi
+  if [ -z "$cand" ]; then
+    for c in origin/main origin/master main master develop; do
+      git rev-parse --verify --quiet "$c" >/dev/null && { cand="$c"; break; }
+    done
+  fi
+
+  # On the trunk itself, "the branch's work" means whatever isn't pushed yet.
+  if [ -z "$cand" ] || [ "$cand" = "$cur" ] || [ "$cand" = "origin/$cur" ]; then
+    up="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
+    [ -n "$up" ] && cand="$up"
+  fi
+
+  [ -n "$cand" ] || return 1
+  echo "$cand"
+}
+
+list_untracked() { git ls-files --others --exclude-standard; }
+
+# Dump untracked files as add-patches, so they read like the rest of the diff.
+emit_untracked_patches() {
+  files="$(list_untracked)"
+  [ -n "$files" ] || { echo "(none)"; return; }
+
+  printf "%s\n" "$files" | while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    size="$(wc -c <"$f" | tr -d ' ')"
+    if [ "$size" -gt "$MAX_UNTRACKED_BYTES" ]; then
+      echo "--- SKIPPED (larger than ${MAX_UNTRACKED_BYTES} bytes): $f"
+      continue
+    fi
+    # --no-index exits 1 on difference; that is the expected path here.
+    git diff --no-index --binary -- /dev/null "$f" || true
+  done
+}
+
 case "$MODE" in
   state)
     branch="$(git rev-parse --abbrev-ref HEAD)"
     echo "=== CURRENT BRANCH ==="
     echo "$branch"
+    echo
+
+    echo "=== DETECTED BASE ==="
+    detect_base || echo "(none — pass a base explicitly)"
     echo
 
     echo "=== UNCOMMITTED CHANGES (working tree + index) ==="
@@ -79,7 +136,7 @@ case "$MODE" in
     echo
 
     echo "=== UNTRACKED FILES ==="
-    untracked="$(git ls-files --others --exclude-standard)"
+    untracked="$(list_untracked)"
     [ -n "$untracked" ] && echo "$untracked" || echo "(none)"
     echo
 
@@ -97,6 +154,56 @@ case "$MODE" in
     detect_tests
     ;;
 
+  branch)
+    base="${2:-}"
+    if [ -z "$base" ]; then
+      base="$(detect_base || true)"
+      [ -n "$base" ] || { echo "ERROR: could not detect a base branch — pass one: review_context.sh branch <base>" >&2; exit 1; }
+    fi
+    git rev-parse --verify --quiet "$base" >/dev/null \
+      || { echo "ERROR: unknown ref '$base'" >&2; exit 1; }
+
+    mb="$(git merge-base "$base" HEAD)"
+
+    echo "=== REVIEW TARGET ==="
+    echo "branch: $(git rev-parse --abbrev-ref HEAD)"
+    echo "base:   $base (merge-base ${mb})"
+    echo "scope:  committed + staged + unstaged + untracked"
+    echo
+
+    echo "=== COMMITS ON THIS BRANCH ==="
+    if [ -n "$(git rev-list "$mb"..HEAD)" ]; then
+      git log --oneline "$mb"..HEAD
+    else
+      echo "(none — all work is uncommitted)"
+    fi
+    echo
+
+    echo "=== WORKING TREE STATUS ==="
+    if [ -n "$(git status --porcelain)" ]; then
+      git status --short
+    else
+      echo "(clean)"
+    fi
+    echo
+
+    detect_tests
+    echo
+
+    # `git diff <commit>` compares that commit against the working tree, so this
+    # single patch spans committed, staged and unstaged changes at once.
+    echo "=== CHANGED FILES (stat: tracked, committed + uncommitted) ==="
+    git diff --stat "$mb"
+    echo
+
+    echo "=== PATCH (tracked: committed + staged + unstaged) ==="
+    git diff "$mb"
+    echo
+
+    echo "=== PATCH (untracked files, shown as additions) ==="
+    emit_untracked_patches
+    ;;
+
   diff)
     base="${2:?usage: review_context.sh diff <base> <head> [--two-dot]}"
     head="${3:?usage: review_context.sh diff <base> <head> [--two-dot]}"
@@ -111,7 +218,20 @@ case "$MODE" in
     range="$base$sep$head"
     echo "=== REVIEW RANGE ==="
     echo "$range"
+    echo "scope:  committed content only"
     echo
+
+    # Comparing against the checked-out branch silently drops its dirty state.
+    cur="$(git rev-parse --abbrev-ref HEAD)"
+    if [ "$head" = "$cur" ] || [ "$head" = "HEAD" ]; then
+      if [ -n "$(git status --porcelain)" ]; then
+        echo "=== WARNING ==="
+        echo "'$head' is checked out and has uncommitted/untracked changes, which this"
+        echo "range does NOT include. Use 'review_context.sh branch $base' to review them too."
+        git status --short
+        echo
+      fi
+    fi
 
     echo "=== CHANGED FILES (stat) ==="
     git diff --stat "$range"
@@ -125,7 +245,7 @@ case "$MODE" in
     ;;
 
   *)
-    echo "ERROR: unknown mode '$MODE' (use: state | diff <base> <head>)" >&2
+    echo "ERROR: unknown mode '$MODE' (use: state | branch [base] | diff <base> <head>)" >&2
     exit 1
     ;;
 esac

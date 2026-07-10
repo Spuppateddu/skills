@@ -1,6 +1,6 @@
 ---
 name: branch-review
-description: Code-review a git diff — either the current branch's uncommitted/unpushed work, or the diff between two branches the user picks. Tech-agnostic. Checks security, type safety, slow/N+1 queries and other inefficiencies, duplicated code, over-long or pointless comments, and missing tests (only when the repo has a test suite). Reports findings graded LOW/MEDIUM/HIGH/CRITICAL with color markers. Use when the user says e.g. "review my branch", "code review the diff", "review my changes before I push", "review the diff between X and Y".
+description: Code-review a git diff. By default reviews everything the current branch would land — its commits AND its uncommitted work (staged, unstaged, untracked) as one target — or the diff between two branches the user picks. Tech-agnostic. Checks security, type safety, slow/N+1 queries and other inefficiencies, duplicated code, over-long or pointless comments, and missing tests (only when the repo has a test suite). Reports findings graded LOW/MEDIUM/HIGH/CRITICAL with color markers. Use when the user says e.g. "review my branch", "code review the diff", "review my changes before I push", "review the diff between X and Y".
 ---
 
 # branch-review
@@ -12,36 +12,41 @@ changed lines — not the whole codebase.
 Paths below are relative to this skill folder, so the skill works wherever installed.
 The helper script needs only `git`.
 
-## Step 1 — pick the review target
+## Step 1 — review the whole branch by default
 
-Run the context script (no args = `state`) to see the current branch's situation:
+"Review my branch" means **everything the branch would land**: its commits *and* the work
+still sitting in the working tree. Committed, staged, unstaged and untracked files are one
+review target, not a menu. Never review only the commits and call the branch reviewed.
+
+Unless the user explicitly asked to compare two other branches, run:
 
 ```bash
-bash "$(dirname "$0")/scripts/review_context.sh" state
+bash "$(dirname "$0")/scripts/review_context.sh" branch
 ```
 
-It prints: current branch, uncommitted changes (working tree + index), untracked
-files, unpushed commits (vs the upstream), and whether a test suite exists.
+With no base it auto-detects the trunk (`origin/HEAD`, else `origin/main`, `origin/master`,
+`main`, `master`, `develop`; on the trunk itself it falls back to the upstream so unpushed
+commits are still covered). Pass a base explicitly to override:
+`... branch <base>`.
 
-Decide from that output:
+It prints, in order: the resolved base and merge-base, the commits on the branch, the
+working-tree status, the test-suite verdict, then **two patches** — one for tracked files
+spanning committed + staged + unstaged changes, one presenting untracked files as
+additions. Together they are the material to review.
 
-- **Uncommitted or untracked changes exist** → ASK the user: "You have uncommitted
-  changes on `<branch>` — review those?" If yes, the review target is the working-tree
-  diff: `git diff HEAD` plus any untracked files (read them in full with the file
-  tools — they have no diff). Do not review untracked files that are clearly generated
-  or vendored.
-- **Tree is clean but there are unpushed commits** → ASK: "Branch `<branch>` is ahead
-  of `<upstream>` by N commits — review those?" If yes, the target is
-  `git diff <upstream>..HEAD`.
-- **Everything committed and pushed (clean tree, not ahead)** → ASK the user for the
-  TWO branches to compare. Never assume them. Then go to Step 2.
+If the auto-detected base looks wrong (branch cut from a release branch, unusual trunk
+name), say which base you used and ask before reviewing against it.
 
-If the user already named what to review (e.g. "review my changes" or "review X vs Y"),
-skip the questions and act on it.
+Skip untracked files that are clearly generated, vendored, or build output — lockfiles,
+`dist/`, `node_modules/`, minified bundles. Large untracked files are listed as SKIPPED by
+the script rather than dumped; only read one if it's plausibly hand-written source.
 
-## Step 2 — get the diff
+Run `state` instead when you just need to inspect the situation without a patch (current
+branch, detected base, uncommitted changes, untracked files, unpushed commits, test suite).
 
-For a two-branch comparison, run:
+## Step 2 — the two-branch case
+
+Only when the user names two branches to compare ("review the diff between X and Y"):
 
 ```bash
 bash "$(dirname "$0")/scripts/review_context.sh" diff <base> <head>
@@ -52,9 +57,12 @@ patch. It uses a three-dot range (`base...head`) by default so you see only what
 introduces relative to the merge-base — not unrelated commits on `base`. Append
 `--two-dot` as a 4th argument if the user wants a literal `base..head` comparison.
 
-The output of this script (or `git diff HEAD` for uncommitted work) IS the material to
-review. If the patch is large, read the changed files for fuller context, but keep every
-finding anchored to a line the diff actually adds or modifies.
+This mode covers **committed content only**. If `<head>` is the checked-out branch and the
+tree is dirty, the script prints a warning listing the excluded changes — surface that to
+the user and offer to rerun in `branch` mode.
+
+If a patch is large, read the changed files for fuller context, but keep every finding
+anchored to a line the diff actually adds or modifies.
 
 ## Step 3 — review
 
