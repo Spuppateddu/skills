@@ -7,3 +7,10 @@ Thumbs.db
 
 # Local snapshot output produced by api-branch-diff
 .api-branch-diff/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Local sync of the Claude app's built-in skills
+synced/

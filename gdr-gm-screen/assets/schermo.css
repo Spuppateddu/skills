@@ -1,0 +1,83 @@
+/* ============================================================
+   schermo.css — the one stylesheet for every "schermo del master".
+   Inlined into each screen by scripts/new_schermo.sh (between the
+   <style id="schermo-css"> markers). Re-inline after editing this file
+   with:  new_schermo.sh --refresh-css <file.html>
+   Black and white on purpose: it prints on any printer and every game
+   looks like it belongs to the same set.
+   Per-screen tweaks (base font size, table padding) go in the file's
+   <style id="schermo-overrides"> block, never here.
+   ============================================================ */
+
+@page { size: A4; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: #fff; color: #111; }
+body { font-family: "Liberation Serif", Georgia, "Times New Roman", serif; font-size: 7.6pt; line-height: 1.3; }
+
+/* ---------- A4 page: 296mm (not 297) so Chromium never spills a blank page ---------- */
+.page {
+  width: 210mm; height: 296mm;
+  padding: 7mm 8mm 6mm 8mm;
+  page-break-after: always;
+  display: flex; flex-direction: column;
+  border: none; position: relative;
+}
+.page:last-child { page-break-after: auto; }
+
+/* ---------- page header: title, subtitle, big grey page number ---------- */
+.head { border-top: 2.2pt solid #111; border-bottom: 0.6pt solid #111; padding: 1.5mm 0 1.6mm 0; margin-bottom: 3mm; position: relative; }
+.head h1 { font-family: Georgia, "Liberation Serif", "Times New Roman", serif; font-size: 21pt; font-weight: bold; letter-spacing: 3.5pt; text-transform: uppercase; padding-right: 18mm; }
+.head .sub { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 6.6pt; letter-spacing: 1.6pt; text-transform: uppercase; color: #333; margin-top: 1mm; }
+.head .pgnum { position: absolute; right: 0; top: 0.5mm; font-family: Georgia, "Liberation Serif", serif; font-size: 26pt; font-weight: bold; color: #c9c9c9; line-height: 1; }
+
+/* ---------- columns: .cols holds 2 or 3 .col of equal width; .wide is 1.35x ---------- */
+.cols { display: flex; gap: 4.5mm; }
+.col { flex: 1; min-width: 0; }
+.col.wide { flex: 1.35; }
+
+/* ---------- section bars (h2) and underlined sub-headings (h3) ---------- */
+h2 { background: #111; color: #fff; font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 7.4pt; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; padding: 1mm 1.8mm 0.9mm 1.8mm; margin: 2.6mm 0 1.4mm 0; }
+.col > h2:first-child, .col > .sect:first-child h2, .page > .cols + h2 { margin-top: 0; }
+.page > h2 { margin-top: 2.6mm; }
+h3 { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 6.9pt; font-weight: bold; letter-spacing: 1pt; text-transform: uppercase; border-bottom: 0.6pt solid #111; padding-bottom: 0.5mm; margin: 1.8mm 0 1mm 0; }
+.col > h3:first-child { margin-top: 0; }
+
+/* ---------- tables: black header row, zebra rows ---------- */
+table { width: 100%; border-collapse: collapse; margin: 0.8mm 0 1.2mm 0; }
+th { background: #111; color: #fff; font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 6.2pt; font-weight: bold; letter-spacing: 0.6pt; text-transform: uppercase; text-align: left; padding: 0.7mm 1.4mm; }
+td { border-bottom: 0.4pt solid #999; padding: 0.6mm 1.4mm; vertical-align: top; }
+tr:nth-child(even) td { background: #efefef; }
+td.c, th.c { text-align: center; }
+td.r, th.r { text-align: right; }
+.die { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-weight: bold; white-space: nowrap; }
+table.tiny td { font-size: 6.8pt; padding: 0.5mm 1.2mm; }
+table.grid td { padding: 0.5mm 1.2mm; }
+
+/* ---------- lists and paragraphs ---------- */
+p { margin-bottom: 0.8mm; }
+ul { list-style: none; margin: 0.4mm 0 1.2mm 0; }
+ul li { padding-left: 2.6mm; position: relative; margin-bottom: 0.5mm; }
+ul li::before { content: "▪"; position: absolute; left: 0; font-size: 5.5pt; top: 0.4mm; }
+ol { margin: 0.4mm 0 1.2mm 3.2mm; }
+ol li { margin-bottom: 0.5mm; padding-left: 0.4mm; }
+
+/* ---------- callout box: a procedure, a list read aloud, a reminder ---------- */
+.box { border: 1pt solid #111; border-left: 2.5pt solid #111; background: #f4f4f4; padding: 1.4mm 1.8mm; margin: 1.2mm 0 1.4mm 0; }
+.box .bt { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 6.6pt; font-weight: bold; letter-spacing: 0.8pt; text-transform: uppercase; margin-bottom: 0.6mm; }
+
+/* ---------- moves / results: a key on the left, its outcome on the right ---------- */
+.trig { font-style: italic; margin-bottom: 0.6mm; }
+.res { margin: 0.4mm 0 1.2mm 0; }
+.res div { display: flex; margin-bottom: 0.5mm; }
+.res .k { flex: 0 0 8mm; }
+.k { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-weight: bold; font-size: 6.6pt; letter-spacing: 0.4pt; text-transform: uppercase; white-space: nowrap; }
+.k.bad { color: #7a0000; }
+
+/* ---------- inline helpers ---------- */
+b { font-weight: bold; }
+em { font-style: italic; }
+.small { font-size: 6.9pt; color: #333; }
+.nw { white-space: nowrap; }          /* a short table cell that must not wrap: "1 giorno", "B ore" */
+
+/* ---------- page footer: "Game · Screen name" left, "N / 4" right ---------- */
+.foot { border-top: 0.6pt solid #111; margin-top: auto; padding-top: 1mm; display: flex; justify-content: space-between; font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 6.2pt; letter-spacing: 1.2pt; text-transform: uppercase; color: #444; }
