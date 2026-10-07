@@ -16,6 +16,21 @@
 #       Sections 1 and 2 only, with no plan file. Used when AUTHORING a plan
 #       (see the plan-write skill), before any plan file exists.
 #
+#   plan_context.sh init
+#       Create the plan folder and print its path:
+#         plan/to-start/     written, not started yet
+#         plan/in-progress/  at least one task started
+#         plan/done/         every task done
+#       The folder sits at the git top level (or the current folder when it is
+#       not inside a repo). It always holds a .gitignore with "*", so it is
+#       ignored by git without touching the repo's own .gitignore.
+#
+#   plan_context.sh list
+#       Every plan in the three folders, with its progress.
+#
+#   plan_context.sh move <plan.md> <to-start|in-progress|done>
+#       Move a plan into that folder and print its new path.
+#
 # Monorepo-aware: a repo with backend/ and frontend/ reports BOTH stacks, so a
 # plan spanning the two knows which suite covers which task. Detection walks up
 # to 4 levels deep, skipping node_modules/ vendor/ dist/ build/ .venv/.
@@ -35,8 +50,74 @@ case "$MODE" in
     [ -n "$PLAN" ] || { echo "ERROR: usage: plan_context.sh status <plan.md>" >&2; exit 1; }
     [ -f "$PLAN" ] || { echo "ERROR: plan file not found: $PLAN" >&2; exit 1; }
     ;;
-  stacks) ;;
-  *) echo "ERROR: unknown mode '$MODE' (use: status <plan.md> | stacks)" >&2; exit 1 ;;
+  stacks|init|list) ;;
+  move)
+    [ -n "$PLAN" ] && [ -n "${3:-}" ] || { echo "ERROR: usage: plan_context.sh move <plan.md> <to-start|in-progress|done>" >&2; exit 1; }
+    [ -f "$PLAN" ] || { echo "ERROR: plan file not found: $PLAN" >&2; exit 1; }
+    ;;
+  *) echo "ERROR: unknown mode '$MODE' (use: status <plan.md> | stacks | init | list | move <plan.md> <state>)" >&2; exit 1 ;;
+esac
+
+# --- the plan folder ---------------------------------------------------------
+# plan/ lives at the git top level, or in the current folder outside a repo
+# (a multi-repo working folder is not a repo itself, so it lands there).
+PLAN_STATES="to-start in-progress done"
+plan_root() {
+  top="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+  echo "$top/plan"
+}
+
+plan_init() {
+  root="$(plan_root)"
+  for st in $PLAN_STATES; do mkdir -p "$root/$st"; done
+  # Self-ignoring folder: git skips plan/ in every repo, nothing tracked changes.
+  [ -f "$root/.gitignore" ] || printf '*\n' > "$root/.gitignore"
+  if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git -C "$root" check-ignore -q "$root/to-start" \
+      || { echo "ERROR: $root is not ignored by git — check $root/.gitignore" >&2; exit 1; }
+  fi
+  echo "$root"
+}
+
+# "3/12" for a plan file, or "no checklist"
+plan_tally() {
+  awk '/^[ \t]*[-*][ \t]+\[.\][ \t]/ { t++; if ($0 ~ /\[[xX]\]/) d++ }
+       END { if (t) printf "%d/%d", d, t; else printf "no checklist" }' "$1"
+}
+
+plan_list() {
+  root="$(plan_root)"
+  [ -d "$root" ] || { echo "(no plan folder at $root — run: plan_context.sh init)"; return 0; }
+  for st in in-progress to-start done; do
+    echo "$st/"
+    n=0
+    for f in "$root/$st"/*.md; do
+      [ -f "$f" ] || continue
+      echo "  $(plan_tally "$f")  $f"
+      n=$((n + 1))
+    done
+    [ "$n" -eq 0 ] && echo "  (empty)"
+  done
+  return 0
+}
+
+plan_move() {
+  case "$2" in to-start|in-progress|done) ;; *)
+    echo "ERROR: state must be to-start, in-progress or done (got '$2')" >&2; exit 1 ;;
+  esac
+  root="$(plan_init)"
+  dest="$root/$2/$(basename "$1")"
+  src="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+  if [ "$src" = "$dest" ]; then echo "$dest"; return 0; fi
+  [ -e "$dest" ] && { echo "ERROR: $dest already exists — not overwriting" >&2; exit 1; }
+  mv "$1" "$dest"
+  echo "$dest"
+}
+
+case "$MODE" in
+  init) plan_init; exit 0 ;;
+  list) plan_list; exit 0 ;;
+  move) plan_move "$PLAN" "$3"; exit 0 ;;
 esac
 
 FOUND_TESTS=0   # flipped to 1 by any stack that can actually run tests

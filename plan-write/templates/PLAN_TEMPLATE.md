@@ -27,7 +27,8 @@ Every task has ONE state. The bracket and the word always mean the same thing:
 4. If that task is `[!]` BLOCKED, read its `blocked-by:` line. If the blocker is now
    DONE, change the task back to `[ ]` TODO and start it. If the blocker is not DONE,
    stop and tell the user.
-5. That one task is your work. Do that task only. Do not start the next task.
+5. That task is your work now. Finish it, mark it DONE, then go back to step 2 and take
+   the next task. Keep going until every task is DONE.
 
 ### How do I update this file?
 
@@ -35,6 +36,11 @@ Every task has ONE state. The bracket and the word always mean the same thing:
 - After the task's `verify:` command passes: change `[~]` to `[x]`, and change `DOING`
   to `DONE`. Save the file. Then update the `Progress:` line.
 - Change the bracket AND the word every time. They must never disagree.
+- This file lives in `plan/to-start/`, `plan/in-progress/` or `plan/done/`. Before you
+  start the FIRST task, if this file is in `plan/to-start/`, move it to
+  `plan/in-progress/`. When the LAST task is DONE, move it to `plan/done/`. Never move it
+  to `plan/done/` while any task is not DONE. The `plan/` folder is gitignored: never
+  commit this file.
 - Never delete a task. Never reorder tasks. Never add a task.
 - Never write `[x]` DONE unless you ran the task's `verify:` command and it passed.
 - If you cannot finish a task, leave it `[~]` DOING and tell the user what stopped you.
@@ -48,7 +54,15 @@ Progress: 0/<N> tasks done
 
 1. Do only what a task says. Do not add features, endpoints, options, or abstractions
    that no task asks for. Do not refactor code that no task mentions.
-2. Do one task at a time. Finish it, verify it, mark it DONE, then stop and report.
+2. Do one task at a time: finish it, verify it, mark it DONE, write one line about it,
+   then start the next task right away. Do the WHOLE plan in one run. Do not stop between
+   tasks or phases, and do not ask "shall I continue?". Stop ONLY when:
+   - the user told you to stop, or to do only some tasks;
+   - you need a human: a task is unclear (rule 11), you reach an Open question, or you
+     need a password, a login, a manual step, or the user's OK for an action;
+   - you are stuck: a task is BLOCKED, its `verify:` still fails after you tried to fix
+     the code, or a tool or service you need is broken.
+   When you stop, say exactly what you need to continue.
 3. Look at the Projects table. Find the row for the project this task belongs to.
    - If its test columns show commands, that project **has tests**. Follow rules 4 and 5.
    - If its test columns say `none`, that project **has no tests**. Do NOT write tests for
@@ -165,7 +179,7 @@ STOP and ask the user. Delete a line here only when the user has answered it.>
 
 ## Deviations
 
-<Write here every time you do something the plan did not ask for, as allowed by rule 11.
+<Write here every time you do something the plan did not ask for, as allowed by rule 12.
 One line each: what you added, and why the task could not work without it. If empty,
 leave "none".>
 

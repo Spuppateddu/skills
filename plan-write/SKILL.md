@@ -1,6 +1,6 @@
 ---
 name: plan-write
-description: Write an implementation plan as a markdown file for ANOTHER AI agent to execute — not for a human to read. Surveys the repo(s) first, interrogates the user until nothing is ambiguous, then emits a `<slug>-plan.md` of phases and sub-phases whose tasks each carry an explicit state ([ ] TODO / [~] DOING / [x] DONE / [!] BLOCKED), exact file paths, exact commands, and a done-when condition, so a small or weak model can tell instantly where it left off and what to do next. Decides the test policy per project: a project with a test suite is planned test-first with full test coverage of every behavior and edge case a task names; a project without one gets no tests, no test framework, and no suggestion of either. Output is consumed by the plan-execute skill. Use when the user says e.g. "write a plan for X", "create a planning file", "plan out this feature", "make a spec for another agent to build".
+description: Write an implementation plan as a markdown file for ANOTHER AI agent to execute — not for a human to read. Surveys the repo(s) first, interrogates the user until nothing is ambiguous, then emits a `plan/to-start/<slug>-plan.md` (the `plan/` folder is always gitignored and split into to-start / in-progress / done) of phases and sub-phases whose tasks each carry an explicit state ([ ] TODO / [~] DOING / [x] DONE / [!] BLOCKED), exact file paths, exact commands, and a done-when condition, so a small or weak model can tell instantly where it left off and what to do next. Decides the test policy per project: a project with a test suite is planned test-first with full test coverage of every behavior and edge case a task names; a project without one gets no tests, no test framework, and no suggestion of either. Output is consumed by the plan-execute skill. Use when the user says e.g. "write a plan for X", "create a planning file", "plan out this feature", "make a spec for another agent to build".
 ---
 
 # plan-write
@@ -66,9 +66,31 @@ Copy `templates/PLAN_TEMPLATE.md` from this skill folder and fill it in. Keep it
 structure, its headings and its task format exactly — `plan-execute` parses the
 checkboxes, and the executing agent relies on the `READ THIS FIRST` block.
 
-**Filename:** `<slug>-plan.md` in the current folder, where `<slug>` is a short kebab-case
-name for the work (`orders-api-plan.md`, `user-auth-plan.md`). Use a different path only
-if the user names one. If the file already exists, show the user and ask before
+**Where it goes:** every plan lives in the `plan/` folder, so a human can see at a glance
+what is waiting, what is running and what is finished:
+
+```
+plan/
+  to-start/      written, no task started yet   ← new plans go here
+  in-progress/   at least one task started       (plan-execute moves it here)
+  done/          every task done                 (plan-execute moves it here)
+```
+
+Create the folder first — this is safe to re-run, and prints the folder's path:
+
+```bash
+bash "$(dirname "$0")/../plan-execute/scripts/plan_context.sh" init
+```
+
+`plan/` sits at the git top level (or in the current folder when that is not a repo, as
+in a multi-repo working folder). It is **always gitignored**: `init` writes a
+`plan/.gitignore` holding `*`, so git ignores the whole folder without a change to the
+repo's own `.gitignore`. Never commit a plan, and never remove that file.
+
+**Filename:** `plan/to-start/<slug>-plan.md`, where `<slug>` is a short kebab-case name
+for the work (`orders-api-plan.md`, `user-auth-plan.md`). Use a different path only if
+the user names one. Before writing, run `plan_context.sh list`: if a plan with that name
+already exists in **any** of the three folders, show the user and ask before
 overwriting — never clobber a plan that may be half-executed.
 
 **Fill in the Projects table** from Step 1's output, with the real commands. This table
@@ -177,12 +199,12 @@ project's row in the Projects table and fix any violation before handing the fil
 Then run the plan through the executing skill's own reader to prove it parses:
 
 ```bash
-bash "$(dirname "$0")/../plan-execute/scripts/plan_context.sh" status <slug>-plan.md
+bash "$(dirname "$0")/../plan-execute/scripts/plan_context.sh" status plan/to-start/<slug>-plan.md
 ```
 
 It must report the right task count and `NEXT:` must point at the first task. If it
 reports `PLAN_CHECKLIST: none`, the checkbox format is broken — fix it.
 
-Finally, tell the user: the file path, the phase names, the task count, and every entry
-left under **Open questions**. Say that the plan is executed with the `plan-execute`
+Finally, tell the user: the file path (in `plan/to-start/`), the phase names, the task
+count, and every entry left under **Open questions**. Say that the plan is executed with the `plan-execute`
 skill, and that you have not written any code.

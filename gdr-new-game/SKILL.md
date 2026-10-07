@@ -18,8 +18,9 @@ run the commands with the placeholder still in them.
 
 ## What you must produce
 
-`<game_slug>-character-sheet-plan.md` in the repo root, in the exact format
-`plan-execute` parses, then hand it to `plan-execute` right away.
+`plan/to-start/<game_slug>-character-sheet-plan.md` (the gitignored plan folder the
+`plan-write` and `plan-execute` skills share), in the exact format `plan-execute`
+parses, then hand it to `plan-execute` right away.
 
 ---
 
@@ -172,9 +173,16 @@ the user the executing agent is instructed to stop when it reaches one.
 
 ## Step 7 — write the plan
 
-Copy `<skill-dir>/templates/GAME_PLAN_TEMPLATE.md` to `<game_slug>-character-sheet-plan.md` in the
-repo root and fill it in. Keep every heading and the task format exactly — `plan-execute`
-parses the checkboxes.
+Create the plan folder first (safe to re-run; it makes `plan/to-start/`,
+`plan/in-progress/`, `plan/done/` at the repo root and gitignores them):
+
+```bash
+bash <skills-repo>/plan-execute/scripts/plan_context.sh init
+```
+
+Copy `<skill-dir>/templates/GAME_PLAN_TEMPLATE.md` to
+`plan/to-start/<game_slug>-character-sheet-plan.md` and fill it in. Keep every heading
+and the task format exactly — `plan-execute` parses the checkboxes.
 
 The template already holds the phases every game needs, the filled-in Projects table, the
 gdr-companion repository conventions, and the seeder guard tasks. Your work is the
@@ -192,13 +200,14 @@ Task-writing rules, for a reader that cannot ask you anything:
   count instead. Which files do get tests is written in the template's conventions
   section; follow it exactly and mark each task with what it must write.
 
-If the plan file already exists, show the user and ask before overwriting — it may be
-half-executed.
+If a plan with that name already exists in any of `plan/to-start/`, `plan/in-progress/`
+or `plan/done/` (`plan_context.sh list` shows them), show the user and ask before
+overwriting — it may be half-executed.
 
 ## Step 8 — prove it parses, then build it
 
 ```bash
-bash <skills-repo>/plan-execute/scripts/plan_context.sh status <game_slug>-character-sheet-plan.md
+bash <skills-repo>/plan-execute/scripts/plan_context.sh status plan/to-start/<game_slug>-character-sheet-plan.md
 ```
 
 The task count must be right and `NEXT:` must point at the first task. `PLAN_CHECKLIST:

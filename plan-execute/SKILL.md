@@ -1,19 +1,61 @@
 ---
 name: plan-execute
-description: Implement a markdown planning/spec file under strict ground rules — normalize the plan into a tracked checklist, then build it task by task in TDD order, ticking each task off in the file as it lands and running the relevant tests (only where that project has a test suite). Builds strictly what the plan says, no invented scope. Tech-agnostic, backend and frontend: detects PHP (Laravel/Symfony/PHPUnit/Pest), Python (Django/FastAPI/Flask/pytest), JS/TS (Next/Vite/React/Vue/jest/vitest), Go, Rust and Ruby. Handles a monorepo and a working folder holding several separate clones (backend/ + frontend/), where the plan says what to do in each. Use when the user pastes or points at a plan/spec/roadmap markdown file and says e.g. "implement this plan", "execute this planning file", "start working through this spec", "continue the plan".
+description: Implement a markdown planning/spec file under strict ground rules — normalize the plan into a tracked checklist, then build it task by task in TDD order, ticking each task off in the file as it lands and running through the whole plan without pausing (stopping only when a human is needed, the user asks, or work is blocked), running the relevant tests (only where that project has a test suite). Builds strictly what the plan says, no invented scope. Tech-agnostic, backend and frontend: detects PHP (Laravel/Symfony/PHPUnit/Pest), Python (Django/FastAPI/Flask/pytest), JS/TS (Next/Vite/React/Vue/jest/vitest), Go, Rust and Ruby. Handles a monorepo and a working folder holding several separate clones (backend/ + frontend/), where the plan says what to do in each. Keeps plans in a gitignored `plan/` folder split into to-start / in-progress / done, works only on to-start or in-progress plans, and moves each plan to the right folder as it starts and finishes. Use when the user pastes or points at a plan/spec/roadmap markdown file and says e.g. "implement this plan", "execute this planning file", "start working through this spec", "continue the plan".
 ---
 
 # plan-execute
 
-Turn a markdown plan into working code, one task at a time, with the plan file itself
-as the source of truth for progress. The plan is a contract: build what it says, tick
+Turn a markdown plan into working code, one task at a time and the whole plan in one run,
+with the plan file itself as the source of truth for progress. The plan is a contract: build what it says, tick
 off what you finish, prove it with tests.
 
 Paths below are relative to this skill folder, so the skill works wherever installed.
 The helper script needs only `git` and `awk`.
 
-If the user has not named the plan file, ASK for it before doing anything else. Never
-guess which markdown file is the plan.
+## Step 0 — find the plan, keep the plan folder in order
+
+Plans live in a `plan/` folder, split by state so a human can see what is waiting, what
+is running and what is finished:
+
+```
+plan/
+  to-start/      written, no task started yet
+  in-progress/   at least one task started
+  done/          every task done
+```
+
+`plan/` sits at the git top level (or the current folder outside a repo) and is
+**always gitignored** through its own `plan/.gitignore` holding `*`. The helper script
+manages it:
+
+```bash
+bash "$(dirname "$0")/scripts/plan_context.sh" init      # create the folders + .gitignore (safe to re-run)
+bash "$(dirname "$0")/scripts/plan_context.sh" list      # every plan, per folder, with its progress
+bash "$(dirname "$0")/scripts/plan_context.sh" move <plan.md> <to-start|in-progress|done>
+```
+
+**Which plan.** You only work on plans in `in-progress/` or `to-start/` — never on one in
+`done/`, unless the user names it and asks to reopen it (then move it back to
+`in-progress/`).
+
+- The user named a plan → use it.
+- They did not → run `list`. If exactly one plan sits in `in-progress/` and `to-start/`
+  together, use it and say which one. Otherwise show the list (in-progress first) and
+  ASK. Never guess between several plans.
+- The user points at a plan **outside** `plan/` (an older `<slug>-plan.md` in the repo
+  root, say) → ask before moving it in; if it is tracked by git, moving it is a change
+  the user has to commit, so say so.
+
+**When to move it** (the script prints the new path — use that path from then on):
+
+| Moment | Move |
+|--------|------|
+| You are about to mark the first task `[~]` and the plan is in `to-start/` | `move <plan> in-progress` |
+| Close-out (Step 5) is finished and every task is `[x]` | `move <plan> done` |
+| A plan in `done/` is reopened at the user's request | `move <plan> in-progress` |
+
+Never move a plan to `done/` while any task is `[ ]`, `[~]` or `[!]`. A blocked plan
+stays in `in-progress/`.
 
 ## Step 1 — check where we are
 
@@ -120,10 +162,24 @@ These bind every task. They are also what gets written into the plan file in Ste
     formatter/linter if it has one (the **STACKS** output names it).
 12. **Ambiguity stops work.** When the plan is unclear, self-contradictory, or collides
     with what the code actually does, ask. Do not guess and build.
+13. **Run the whole plan without stopping.** Once you start, go from task to task until
+    every task is `[x]` — do not pause between tasks or phases, and never ask "shall I
+    continue?". Stop only when:
+    - **the user asked you to** — to stop, or to do only some tasks or one phase;
+    - **you need a human** — an ambiguity (rule 12), an Open question, a judgment-call
+      gap (rule 5), a contract the backend does not serve yet (rule 9), a credential, a
+      login or another manual step, or an action that needs the user's OK first;
+    - **you are stuck** — a `[!]` BLOCKED task whose blocker is not done, a `verify:`
+      that still fails after real attempts to fix the code, or a broken environment
+      (missing tool, service down) you cannot fix inside the plan's scope.
+    When you stop, leave the task `[~]` (or `[!]` with a `blocked-by:` line), keep the
+    plan in `plan/in-progress/`, and say exactly what you need to go on.
 
 ## Step 4 — implement, task by task
 
-Repeat until no unchecked tasks remain. For each task, in this order:
+Repeat until no unchecked tasks remain. If the plan is still in `plan/to-start/`, move
+it to `plan/in-progress/` before you mark its first task `[~]` (Step 0). For each task,
+in this order:
 
 1. **Read the task** and the surrounding plan context. Identify its project from the tag
    (rule 8) and read the code it touches before writing anything.
@@ -135,9 +191,11 @@ Repeat until no unchecked tasks remain. For each task, in this order:
 5. **Tick the box** in the plan file (rule 2), and add any **Deviations** entry the task
    required (rule 5).
 6. **Report the task** in one or two lines: what landed, in which project, which tests
-   cover it, anything the user needs to decide before the next task.
+   cover it. Then go straight on to the next task (rule 13) — no waiting for a reply.
 
-Do not run ahead into the next task in the same breath — one task, one loop, one tick.
+Each task is one full loop — one task, one loop, one tick — and the loops run back to
+back. Never start the next task before the current one is ticked, and never stop
+between tasks unless rule 13 says so.
 
 ## Step 5 — close out
 
@@ -150,7 +208,9 @@ When every box is checked:
    so the user sees exactly where the implementation departed from the plan and why.
 4. Leave committing to the user (rule 10). In a multi-repo folder, tell them which repos
    have uncommitted work, so nothing is left behind in the one they are not looking at.
+5. Move the plan to `plan/done/` (Step 0) and tell the user its new path. Only when every
+   task is `[x]` — a plan with any task left stays in `plan/in-progress/`.
 
-If a task could not be completed, leave its box unchecked, say which one and why. An
-unchecked box is information; a checked box on unfinished work is a lie the next session
-will trust.
+If a task could not be completed, leave its box unchecked, leave the plan in
+`plan/in-progress/`, and say which task and why. An unchecked box is information; a
+checked box on unfinished work is a lie the next session will trust.
