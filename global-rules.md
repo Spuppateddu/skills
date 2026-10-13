@@ -11,8 +11,8 @@ disagree with. Install commands are in the [README](./README.md#global-rules).
 
 ## Never push to git
 
-You can commit. Never push — not even if I say "push". Remind me instead that I
-push by hand.
+Commit only when I ask you to — never on your own. Never push, not even if I say
+"push"; remind me instead that I push by hand.
 
 When you commit:
 
