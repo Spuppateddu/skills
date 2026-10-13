@@ -9,10 +9,22 @@ disagree with. Install commands are in the [README](./README.md#global-rules).
 
 ---
 
-## Never commit anything to git
+## Never push to git
 
-Even if I say "commit", don't do it — remind me instead that I don't want it. I
-commit by hand.
+You can commit. Never push — not even if I say "push". Remind me instead that I
+push by hand.
+
+When you commit:
+
+- Write the commit message and description in English.
+- Never mention Claude or AI in the commit — no "done with Claude", no
+  `Co-Authored-By: Claude` line, no "Generated with Claude Code".
+- Don't commit broken code. Another agent may still be changing the same files, so
+  check the code builds and the tests pass (where the project has them) before you
+  commit, and commit only the files you changed yourself.
+- Don't commit what belongs in `.gitignore`: secrets (`.env`, keys, tokens,
+  credentials) and clutter (build output, `node_modules/`, caches, logs, local IDE
+  files). If such a file isn't ignored yet, add it to `.gitignore` instead.
 
 ## Always answer in English
 
