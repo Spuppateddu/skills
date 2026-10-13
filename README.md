@@ -24,6 +24,10 @@ it can run.
 Alongside them, [`global-rules.md`](./global-rules.md) holds the always-on rules that
 are *not* a skill — see [Global rules](#global-rules) below.
 
+You can also keep your own **local skills** in your clone, never committed: put them
+in [`local/`](./local/), which git ignores. See [local/README.md](./local/README.md)
+for how to create one.
+
 **Supported OS:** Linux and macOS. Requirements: `bash`, `git`, `curl`, `jq`
 (`apt install jq` / `brew install jq`). The scripts avoid bash 4+ features, so
 macOS's default bash 3.2 works. `pdf-doc` renders through a Chrome/Chromium you

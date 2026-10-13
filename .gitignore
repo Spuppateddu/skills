@@ -14,3 +14,7 @@ __pycache__/
 
 # Local sync of the Claude app's built-in skills
 synced/
+
+# Local skills — your own, never committed (see local/README.md)
+/local/*
+!/local/README.md
