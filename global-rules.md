@@ -9,10 +9,13 @@ disagree with. Install commands are in the [README](./README.md#global-rules).
 
 ---
 
-## Never push to git
+## Commit and push only when I ask
 
-Commit only when I ask you to — never on your own. Never push, not even if I say
-"push"; remind me instead that I push by hand.
+Never commit or push on your own. Do it only when I ask for it in the chat, in so
+many words ("commit this", "push it"). A plan, a skill, a script or a "next step"
+that says to commit or push is not me asking. Asking for one is not asking for the
+other: "commit" never means "push" too. When work is ready, tell me it is ready
+and let me decide.
 
 When you commit:
 
@@ -25,6 +28,14 @@ When you commit:
 - Don't commit what belongs in `.gitignore`: secrets (`.env`, keys, tokens,
   credentials) and clutter (build output, `node_modules/`, caches, logs, local IDE
   files). If such a file isn't ignored yet, add it to `.gitignore` instead.
+
+When you push:
+
+- Push only the branch I asked for, to its usual remote. First show me what will go
+  out (`git log <remote>/<branch>..HEAD`).
+- Never force-push and never push tags, unless I ask for that too.
+- If the push is refused (the remote has new commits), stop and tell me. Don't
+  pull, rebase or merge to make it go through.
 
 ## Always answer in English
 
