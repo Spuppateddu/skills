@@ -83,3 +83,17 @@ The thing you are explaining is already hard. Don't make the words hard too.
   one.
 - This is about the words, not the depth. Don't cut detail to make it simple: say the
   same thing in easier words.
+
+## Write documents in Italian
+
+Every document you create or rewrite — notes, reports, guides, plans, analyses, proposals,
+anything saved as a file for people to read — is written in **Italian**, not in English.
+My team reads Italian; a doc in English has to be translated before it is useful.
+
+- This is the opposite of the "Always answer in English" rule above, on purpose: your
+  **replies** to me stay in English; the **files** you write are in Italian.
+- Code, commit messages, variable names, and comments inside code stay in English, as the
+  projects' own rules say.
+- Keep the technical terms as they are (chunk, embedding, alias, worker): translate the
+  sentences, not the jargon.
+- If I ask for a doc in another language in that message, that message wins.
