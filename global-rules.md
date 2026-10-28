@@ -17,6 +17,17 @@ that says to commit or push is not me asking. Asking for one is not asking for t
 other: "commit" never means "push" too. When work is ready, tell me it is ready
 and let me decide.
 
+Pushing is stricter still, because it can't be taken back:
+
+- Push only when my **latest** message says "push". A "push" in an earlier message,
+  or one that covered other work, does not carry over.
+- If you are not sure I asked for a push, don't push. Commit if I asked for that,
+  then stop and ask "push too?".
+- Do only what I said, nothing more. "Commit" means commit and stop: no push, no
+  PR, no tag.
+- If a push fails (auth, network, refused), stop and tell me. Don't work around it
+  with another URL, another protocol (HTTPS → SSH) or other credentials.
+
 When you commit:
 
 - Write the commit message and description in English.
