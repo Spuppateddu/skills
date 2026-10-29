@@ -13,12 +13,14 @@
 #   SUMMARY_MODEL=/path/to/model.gguf   model to use
 #   LLAMA_CLI=/path/to/llama-cli        llama.cpp binary
 #   SUMMARY_MAXTOK=8192                 max tokens to generate (thinking + summary)
+#   SUMMARY_RULES=/path/to/rules.md     summary rules added to every prompt
 #
 set -euo pipefail
 
 LLAMA_CLI="${LLAMA_CLI:-/mnt/large-language-model/engines/llama.cpp/build/bin/llama-cli}"
 SUMMARY_MODEL="${SUMMARY_MODEL:-/mnt/large-language-model/models/general/Qwen3.5-35B-A3B-UD-Q4_K_XL.gguf}"
 SUMMARY_MAXTOK="${SUMMARY_MAXTOK:-8192}"
+SUMMARY_RULES="${SUMMARY_RULES:-}"
 THREADS="$(nproc 2>/dev/null || echo 8)"
 
 # Single-pass context cap (tested OK on RTX 4070 12GB with this model).
@@ -35,6 +37,10 @@ OUT="${2:-${IN%.*}-summary.txt}"
 
 [ -x "$LLAMA_CLI" ]     || { echo "ERROR: llama-cli not found at $LLAMA_CLI" >&2; exit 1; }
 [ -f "$SUMMARY_MODEL" ] || { echo "ERROR: model not found at $SUMMARY_MODEL" >&2; exit 1; }
+if [ -n "$SUMMARY_RULES" ] && [ ! -f "$SUMMARY_RULES" ]; then
+    echo "ERROR: rules file not found at $SUMMARY_RULES" >&2
+    exit 1
+fi
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -84,6 +90,19 @@ IMPORTANT: write in the SAME LANGUAGE as the transcript. Output only the summary
 REDUCE_INSTRUCTIONS='You will receive, in order, partial summaries of consecutive parts of ONE recorded conversation.
 Merge them into a single thorough summary of the whole conversation: what it was about, the main points and events in chronological order, decisions taken, questions and their answers, names, numbers and dates mentioned, disagreements, and anything left unresolved. If there were tasks or next steps, list them at the end. Remove repetitions between the parts.
 IMPORTANT: write in the SAME LANGUAGE as the partial summaries. Output only the summary, no preamble.'
+
+# The user's rules go last, so where they differ from the instructions above
+# they win. The chunk prompt gets them too: a rule about what to leave out or
+# how to spell a name has to hold before the merge, not only after it.
+if [ -n "$SUMMARY_RULES" ]; then
+    RULES_BLOCK="
+Follow these rules from the user. Where they differ from the instructions above, the rules win:
+$(cat "$SUMMARY_RULES")"
+    FULL_INSTRUCTIONS="$FULL_INSTRUCTIONS$RULES_BLOCK"
+    CHUNK_INSTRUCTIONS="$CHUNK_INSTRUCTIONS$RULES_BLOCK"
+    REDUCE_INSTRUCTIONS="$REDUCE_INSTRUCTIONS$RULES_BLOCK"
+    echo "==> Using summary rules from '$SUMMARY_RULES'"
+fi
 
 # --- decide single-pass vs map-reduce ----------------------------------------
 BYTES="$(stat -c%s "$IN")"
