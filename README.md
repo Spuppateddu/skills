@@ -19,7 +19,8 @@ it can run.
 | [`gdr-character-sheets`](./gdr-character-sheets/) | Fill a tabletop RPG character sheet (and crew sheet) as **editable Xournal++ files** over the game's blank PDF, exported to PDF, from a data file or from characters rolled with the manual. Reads the printed geometry from the PDF itself (words, dots, checkboxes, rules), writes on the lines, fills dots, ticks boxes, rings choices, adds notes and a story handout, then renders and checks the result. Ships the Python library and the lessons from four one-shots. |
 | [`gdr-gm-screen`](./gdr-gm-screen/) | Build a tabletop RPG **GM screen** ("schermo del master") as a 4-page A4 PDF from the game's rulebook: the rules looked up mid-scene — resolution, conflict, damage, downtime, GM procedures, random tables — condensed into one fixed black-and-white layout shared by every game, so all the screens look like one set. Reads the manual cheaply (outline, grep, pages), writes a self-contained HTML with the shared stylesheet inlined, renders it with the Chromium already on the machine, measures free space and overflow per page and looks at the result. Ships the stylesheet, the templates and the lessons from five games. |
 | [`pdf-doc`](./pdf-doc/) | Write a document — report, proposal, offer, manual, spec — as a **self-contained** styled HTML file and render it to PDF. One fixed layout (cover, auto-built table of contents, consistent tables/callouts/code) so a whole set of PDFs matches; you supply one or two brand colours, an optional logo, the language and the verbal style. The HTML stays editable: change it and re-run the converter — the TOC rebuilds itself. Installs nothing, renders through the Chrome already on the machine. |
-| [`summarize-transcript`](./summarize-transcript/) | Summarize a transcript — meeting, work call, interview, lesson, RPG session — or any text file with a **fully local** LLM (llama.cpp), so nothing is uploaded. Auto-chunks long inputs; writes the summary in the input's own language. Pairs with [call-transcriber](https://github.com/Spuppateddu/call-transcriber). |
+| [`music-tagger`](./music-tagger/) | Clean up a folder of mp3/m4a songs like MusicBrainz Picard does, from the command line: find each song on MusicBrainz (existing ids, tags, file name, optional AcoustID fingerprint), write full tags and embed the album cover, rename to `Artist - Title`, and move duplicates (same recording or same audio fingerprint) to `_duplicates/`. A scan that changes nothing writes a report you review and edit first; apply has an undo. Downloads its own `fpcalc` on first use, no sudo. |
+| [`summarize-transcript`](./summarize-transcript/) | Summarize a transcript — meeting, work call, interview, lesson, RPG session — or any text file with a **local** LLM (llama.cpp, the default — nothing is uploaded) or, if you choose, Claude, OpenAI or opencode. Auto-chunks long inputs; writes the summary in the input's own language. Pairs with [call-transcriber](https://github.com/Spuppateddu/call-transcriber). |
 
 Alongside them, [`global-rules.md`](./global-rules.md) holds the always-on rules that
 are *not* a skill — see [Global rules](#global-rules) below.
@@ -34,9 +35,11 @@ macOS's default bash 3.2 works. `pdf-doc` renders through a Chrome/Chromium you
 almost certainly already have (WeasyPrint or wkhtmltopdf also work if you prefer).
 `gdr-character-sheets` needs `xournalpp`, `mupdf-tools`, `poppler-utils`, `qpdf` and Python Pillow.
 `gdr-gm-screen` needs `poppler-utils`, `python3` and a Chromium (Chrome, Chromium, Brave or Edge).
-`summarize-transcript` additionally needs a local
-[llama.cpp](https://github.com/ggml-org/llama.cpp) build and a GGUF model (paths are
-configurable — see its SKILL.md).
+`music-tagger` needs `python3`; it fetches `fpcalc` and `mutagen` into `~/.cache/music-tagger/` on first use.
+`summarize-transcript` needs a local
+[llama.cpp](https://github.com/ggml-org/llama.cpp) build and a GGUF model for its
+default backend (paths are configurable — see its SKILL.md), or, for a cloud
+backend, the `claude` or `opencode` CLI, or an Anthropic/OpenAI API key with `curl` and `jq`.
 
 ## Setup
 
