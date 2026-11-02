@@ -20,7 +20,9 @@ it can run.
 | [`gdr-gm-screen`](./gdr-gm-screen/) | Build a tabletop RPG **GM screen** ("schermo del master") as a 4-page A4 PDF from the game's rulebook: the rules looked up mid-scene — resolution, conflict, damage, downtime, GM procedures, random tables — condensed into one fixed black-and-white layout shared by every game, so all the screens look like one set. Reads the manual cheaply (outline, grep, pages), writes a self-contained HTML with the shared stylesheet inlined, renders it with the Chromium already on the machine, measures free space and overflow per page and looks at the result. Ships the stylesheet, the templates and the lessons from five games. |
 | [`pdf-doc`](./pdf-doc/) | Write a document — report, proposal, offer, manual, spec — as a **self-contained** styled HTML file and render it to PDF. One fixed layout (cover, auto-built table of contents, consistent tables/callouts/code) so a whole set of PDFs matches; you supply one or two brand colours, an optional logo, the language and the verbal style. The HTML stays editable: change it and re-run the converter — the TOC rebuilds itself. Installs nothing, renders through the Chrome already on the machine. |
 | [`music-tagger`](./music-tagger/) | Clean up a folder of mp3/m4a songs like MusicBrainz Picard does, from the command line: find each song on MusicBrainz (existing ids, tags, file name, optional AcoustID fingerprint), write full tags and embed the album cover, rename to `Artist - Title`, and move duplicates (same recording or same audio fingerprint) to `_duplicates/`. A scan that changes nothing writes a report you review and edit first; apply has an undo. Downloads its own `fpcalc` on first use, no sudo. |
-| [`summarize-transcript`](./summarize-transcript/) | Summarize a transcript — meeting, work call, interview, lesson, RPG session — or any text file with a **local** LLM (llama.cpp, the default — nothing is uploaded) or, if you choose, Claude, OpenAI or opencode. Auto-chunks long inputs; writes the summary in the input's own language. Pairs with [call-transcriber](https://github.com/Spuppateddu/call-transcriber). |
+| [`summarize-transcript`](./summarize-transcript/) | Summarize a transcript — meeting, work call, interview, lesson, RPG session — or any text file. The agent you're chatting with writes it on its **current model** (no "which model?" question); another model, a **fully local** LLM (llama.cpp, nothing uploaded) or a cloud backend (Claude, OpenAI, opencode) only when you ask. Follows your rules — one `summary-rules.md` or several files in `summary-rules/` (one per kind of transcript), from the chat's folder or a path you name; writes the summary in the input's own language. Pairs with [call-transcriber](https://github.com/Spuppateddu/call-transcriber). |
+| [`read-only`](./read-only/) | Put the chat in **read-only mode** with `/read-only`: the agent only looks — reads files, inspects data on a server over ssh, queries a database with `SELECT`, answers questions about a project — and never edits code, changes config or runs a command that changes state, until you say `/read-only off`. Answers as an expert in the field it is looking at (sysadmin, DBA, framework developer), in plain words. Manual-only: it never turns on by itself. |
+| [`status-report`](./status-report/) | Ask `/status-report` (or "where are we?", "how much is left?") for a one-screen report: the task running now, % done with a progress bar, tasks left and blocked, and **time left only when it can be measured** — from the pace of tasks already ticked in a plan (timestamps in the Claude Code session logs) or from a Redmine ticket's estimated vs spent hours; otherwise it says "not measurable" instead of guessing. Reads a `plan-execute` plan, a ticket and its subtasks, or the current chat. Changes nothing. |
 
 Alongside them, [`global-rules.md`](./global-rules.md) holds the always-on rules that
 are *not* a skill — see [Global rules](#global-rules) below.
@@ -36,10 +38,10 @@ almost certainly already have (WeasyPrint or wkhtmltopdf also work if you prefer
 `gdr-character-sheets` needs `xournalpp`, `mupdf-tools`, `poppler-utils`, `qpdf` and Python Pillow.
 `gdr-gm-screen` needs `poppler-utils`, `python3` and a Chromium (Chrome, Chromium, Brave or Edge).
 `music-tagger` needs `python3`; it fetches `fpcalc` and `mutagen` into `~/.cache/music-tagger/` on first use.
-`summarize-transcript` needs a local
-[llama.cpp](https://github.com/ggml-org/llama.cpp) build and a GGUF model for its
-default backend (paths are configurable — see its SKILL.md), or, for a cloud
-backend, the `claude` or `opencode` CLI, or an Anthropic/OpenAI API key with `curl` and `jq`.
+`summarize-transcript` needs nothing extra by default. Its script needs a
+[llama.cpp](https://github.com/ggml-org/llama.cpp) build and a GGUF model for the local mode (paths are
+configurable — see its SKILL.md), or, for a cloud backend, the `claude` or `opencode` CLI, or an
+Anthropic/OpenAI API key with `curl` and `jq`.
 
 ## Setup
 
