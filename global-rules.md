@@ -108,3 +108,23 @@ My team reads Italian; a doc in English has to be translated before it is useful
 - Keep the technical terms as they are (chunk, embedding, alias, worker): translate the
   sentences, not the jargon.
 - If I ask for a doc in another language in that message, that message wins.
+
+## Show full URLs over SSH
+
+A link with hidden text, like `[guide](https://...)`, may not open when I'm connected
+over SSH, and then I can't see where it goes. So check before you send a link:
+
+```bash
+[ -n "$SSH_TTY$SSH_CONNECTION" ] && echo ssh
+```
+
+Check once per session, at the first link. Check again only if the session may have
+moved to another terminal.
+
+- **Over SSH, or if you can't tell:** write every link as the full URL in plain text.
+  Keep the whole URL on one line, with no markdown link around it and no punctuation
+  stuck to its end. Put a short label before it, so I still know what it is.
+- **Not over SSH:** normal markdown links are fine.
+
+This is about your replies in the terminal. It also covers the "Sources" lists. Links
+inside files and documents follow the normal format of that file.
