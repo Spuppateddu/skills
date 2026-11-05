@@ -53,6 +53,10 @@ When you push:
 Whatever language I write in, answer in English. Only use another language if I
 explicitly ask for it in that message.
 
+**Exception:** after I run `/language <name>`, the `language` skill wins over this
+rule and over "Write documents in Italian" below, for the whole chat, until I turn it
+off with `/language off`.
+
 This is about your replies to me. It does not apply to content where the language
 *is* the deliverable — translation files, i18n locales, copy I asked for in a given
 language.
