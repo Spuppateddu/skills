@@ -25,7 +25,8 @@
    `<h2>Ferite <span class="pg">p.52-54</span></h2>`. At the table the GM uses
    it to open the book at the full rule. Use the page number printed in the
    book, check it against the page, and name the edition in the footer when
-   editions have different page numbers.
+   editions have different page numbers. No readable number means no page:
+   leave the title without it rather than print an estimate.
 8. **No rule you are not sure of.** When two passages disagree or the
    extracted text is garbled, read the page image (`pdftoppm -f N -l N -r 80`)
    or leave the rule out and list it in the report as unverified.

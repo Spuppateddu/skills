@@ -128,6 +128,10 @@ Rules while writing (the why is in `reference/lessons.md`):
   add the offset when you read the extracted text. A source outside the manual
   (a character sheet, for example) stays in a comment after the `<h2>`.
 - Check each page before you print it: open it and find the rule there.
+- Print a page only when you can: no number on it (covers, endpapers), a number
+  unreadable in a scan, or a page missing from your copy → no span, never an
+  estimate. Note the likely page in a comment after the `</h2>` if you have one.
+  A page without its own number between numbered ones is fine: it can be counted.
 - In body text, `p.N` always means the manual and `pag. N` means a page of the
   screen, so the GM never opens the book at the wrong place.
 - If the game has editions with different page numbers, name the one you used
