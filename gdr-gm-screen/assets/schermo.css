@@ -36,7 +36,8 @@ body { font-family: "Liberation Serif", Georgia, "Times New Roman", serif; font-
 .col.wide { flex: 1.35; }
 
 /* ---------- section bars (h2) and underlined sub-headings (h3) ---------- */
-h2 { background: #111; color: #fff; font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 7.4pt; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; padding: 1mm 1.8mm 0.9mm 1.8mm; margin: 2.6mm 0 1.4mm 0; }
+h2 { background: #111; color: #fff; font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 7.4pt; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; padding: 1mm 1.8mm 0.9mm 1.8mm; margin: 2.6mm 0 1.4mm 0; display: flex; justify-content: space-between; align-items: baseline; gap: 2mm; }
+h2 .pg { flex: none; font-size: 6.4pt; font-weight: normal; letter-spacing: 0.2pt; text-transform: none; }
 .col > h2:first-child, .col > .sect:first-child h2, .page > .cols + h2 { margin-top: 0; }
 .page > h2 { margin-top: 2.6mm; }
 h3 { font-family: "Liberation Sans", Arial, Helvetica, sans-serif; font-size: 6.9pt; font-weight: bold; letter-spacing: 1pt; text-transform: uppercase; border-bottom: 0.6pt solid #111; padding-bottom: 0.5mm; margin: 1.8mm 0 1mm 0; }

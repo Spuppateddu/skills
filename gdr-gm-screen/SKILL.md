@@ -52,7 +52,8 @@ python3 <skill-dir>/scripts/manual.py page "<game>/manual-text" 63-86 -o /tmp/x/
 
 `extract` writes `full-layout.txt` (every page, columns and tables kept),
 `outline.md` (the PDF bookmarks with PDF page numbers) and a README. Page
-numbers are PDF pages; cite them as `pdf p.N`. A page is 3-6 K characters:
+numbers here are PDF pages; what the screen prints is the page number printed
+on the book's page, so check the offset between the two first (see Step 2). A page is 3-6 K characters:
 `page` prints at most 2-3 per call, a whole chapter goes to a file with `-o`.
 
 From the outline, pick the chapters that hold rules (the core mechanic, skills,
@@ -90,7 +91,7 @@ covers:
     <div class="pgnum">1</div></div>
   <div class="cols">
     <div class="col">                       <!-- add class="wide" for a 1.35x column -->
-      <h2>Tiro azione</h2>                  <!-- pdf p.20-24 -->
+      <h2>Tiro azione <span class="pg">p.20-24</span></h2>   <!-- manual page, printed in the title bar -->
       <ul><li><b>Pool</b> = 1d per pallino · conta il <b>dado più alto</b>.</li></ul>
       <table><tr><th>Posizione</th><th class="c">6</th><th>4/5</th></tr>
              <tr><td><b>Rischiosa</b></td><td class="c die">ok</td><td>danno…</td></tr></table>
@@ -105,9 +106,9 @@ covers:
     </div>
     <div class="col">…</div>
   </div>
-  <h2>Le 12 azioni</h2>                     <!-- full-width block under the columns -->
+  <h2>Le 12 azioni <span class="pg">p.200</span></h2>    <!-- full-width block under the columns -->
   <table class="tiny grid">…</table>
-  <h2>Veicoli</h2>                          <!-- or a second .cols block with 2-3 .col -->
+  <h2>Veicoli <span class="pg">p.210</span></h2>         <!-- or a second .cols block with 2-3 .col -->
   <div class="cols"><div class="col">…</div><div class="col">…</div></div>
   <div class="foot"><span>Blades in the Dark · Schermo del GM</span><span>1 / 4</span></div>
 </div>
@@ -120,8 +121,17 @@ Rules while writing (the why is in `reference/lessons.md`):
 - Bold the game term or the number once per line; join short alternatives
   with ` · `; a bullet is one rule plus its exception.
 - Three or more value pairs → a table. A procedure → `<ol>` or a `.box`.
-- Paraphrase; never paste paragraphs from the book. Put `<!-- pdf p.N -->`
-  after every `<h2>` so the user can check the source.
+- Paraphrase; never paste paragraphs from the book.
+- Every `<h2>` ends with its manual page: `<span class="pg">p.N</span>`, shown
+  at the right of the title bar so the GM can open the book at the table.
+  Use the number printed on the book's page. If it differs from the PDF page,
+  add the offset when you read the extracted text. A source outside the manual
+  (a character sheet, for example) stays in a comment after the `<h2>`.
+- Check each page before you print it: open it and find the rule there.
+- In body text, `p.N` always means the manual and `pag. N` means a page of the
+  screen, so the GM never opens the book at the wrong place.
+- If the game has editions with different page numbers, name the one you used
+  in the footer: `<span>Blades in the Dark · Schermo del GM · pagine: Deep Cuts</span>`.
 - No rule you could not verify. List doubts in the report instead.
 - Aim for 5 000–6 500 characters of text per page (up to ~7 000 when most
   of it is tables), 6–10 `<h2>` per page.
@@ -173,7 +183,7 @@ those. Fix the HTML, re-render. Two or three rounds are normal.
 
 ## Step 4 — report
 
-Give the two paths, the page plan (four titles with their sections), what was
+Give the two paths, the edition the page numbers refer to, the page plan (four titles with their sections), what was
 left out on purpose and why, the rules you could not verify, and the loop for
 edits: change the HTML, run `render_schermo.sh` again. If the shared style is
 changed later, `new_schermo.sh --refresh-css <file.html>` re-inlines it into an

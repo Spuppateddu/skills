@@ -21,8 +21,11 @@
 6. **Paraphrase, do not copy.** The screen condenses the rules in your words;
    do not lift paragraphs from the book. Short official phrasings that *are*
    the rule (a move's trigger, a result name) are fine.
-7. **Cite the page in a comment** after each `<h2>`: `<!-- pdf p.52-54 -->`.
-   The user checks the screen against the book; the comment says where.
+7. **Print the manual page in each section title**:
+   `<h2>Ferite <span class="pg">p.52-54</span></h2>`. At the table the GM uses
+   it to open the book at the full rule. Use the page number printed in the
+   book, check it against the page, and name the edition in the footer when
+   editions have different page numbers.
 8. **No rule you are not sure of.** When two passages disagree or the
    extracted text is garbled, read the page image (`pdftoppm -f N -l N -r 80`)
    or leave the rule out and list it in the report as unverified.
