@@ -40,7 +40,7 @@ Every task has ONE state. The bracket and the word always mean the same thing:
   start the FIRST task, if this file is in `plan/to-start/`, move it to
   `plan/in-progress/`. When the LAST task is DONE, move it to `plan/done/`. Never move it
   to `plan/done/` while any task is not DONE. The `plan/` folder is gitignored: never
-  commit this file.
+  commit this file, unless the repo has a `.plans-tracked` file at its top level.
 - Never delete a task. Never reorder tasks. Never add a task.
 - Never write `[x]` DONE unless you ran the task's `verify:` command and it passed.
 - If you cannot finish a task, leave it `[~]` DOING and tell the user what stopped you.

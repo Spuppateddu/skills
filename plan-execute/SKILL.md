@@ -25,8 +25,9 @@ plan/
 ```
 
 `plan/` sits at the git top level (or the current folder outside a repo) and is
-**always gitignored** through its own `plan/.gitignore` holding `*`. The helper script
-manages it:
+**always gitignored** through its own `plan/.gitignore` holding `*`. Exception: a repo with a
+`.plans-tracked` file at its top level commits its plans, with `plan/` in the project folder you
+are in (`cd` into it first) and no `plan/.gitignore`. The helper script manages it:
 
 ```bash
 bash "$(dirname "$0")/scripts/plan_context.sh" init      # create the folders + .gitignore (safe to re-run)

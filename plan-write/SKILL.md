@@ -87,6 +87,11 @@ in a multi-repo working folder). It is **always gitignored**: `init` writes a
 `plan/.gitignore` holding `*`, so git ignores the whole folder without a change to the
 repo's own `.gitignore`. Never commit a plan, and never remove that file.
 
+**Exception:** a repo with a `.plans-tracked` file at its top level commits its plans. There,
+`init` puts `plan/` in the project folder you are in (the first folder under the top level, so
+`cd` into it first) and writes no `plan/.gitignore`. Plans there are committed like any other
+file, when the user asks for a commit.
+
 **Filename:** `plan/to-start/<slug>-plan.md`, where `<slug>` is a short kebab-case name
 for the work (`orders-api-plan.md`, `user-auth-plan.md`). Use a different path only if
 the user names one. Before writing, run `plan_context.sh list`: if a plan with that name

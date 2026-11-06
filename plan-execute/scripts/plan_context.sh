@@ -24,6 +24,9 @@
 #       The folder sits at the git top level (or the current folder when it is
 #       not inside a repo). It always holds a .gitignore with "*", so it is
 #       ignored by git without touching the repo's own .gitignore.
+#       Exception: a repo with a .plans-tracked file at its top level commits
+#       its plans. There, plan/ sits in the project folder you are in (the first
+#       folder under the top level) and gets no .gitignore.
 #
 #   plan_context.sh list
 #       Every plan in the three folders, with its progress.
@@ -62,14 +65,36 @@ esac
 # plan/ lives at the git top level, or in the current folder outside a repo
 # (a multi-repo working folder is not a repo itself, so it lands there).
 PLAN_STATES="to-start in-progress done"
+plans_tracked() {
+  tracked_top="$(git rev-parse --show-toplevel 2>/dev/null)" && [ -f "$tracked_top/.plans-tracked" ]
+}
+
 plan_root() {
   top="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+  if plans_tracked; then
+    here="$(pwd -P)"
+    if [ "$here" = "$top" ]; then
+      echo "ERROR: this repo keeps plans per project (.plans-tracked): cd into a project folder first" >&2
+      exit 1
+    fi
+    rel="${here#"$top"/}"
+    echo "$top/${rel%%/*}/plan"
+    return 0
+  fi
   echo "$top/plan"
 }
 
 plan_init() {
   root="$(plan_root)"
   for st in $PLAN_STATES; do mkdir -p "$root/$st"; done
+  if plans_tracked; then
+    if git -C "$root" check-ignore -q "$root/to-start"; then
+      echo "ERROR: $root is ignored by git, but this repo commits its plans — check its .gitignore files" >&2
+      exit 1
+    fi
+    echo "$root"
+    return 0
+  fi
   # Self-ignoring folder: git skips plan/ in every repo, nothing tracked changes.
   [ -f "$root/.gitignore" ] || printf '*\n' > "$root/.gitignore"
   if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
