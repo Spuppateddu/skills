@@ -48,6 +48,20 @@ When you push:
 - If the push is refused (the remote has new commits), stop and tell me. Don't
   pull, rebase or merge to make it go through.
 
+## Other changes in the repo are normal
+
+Uncommitted changes you did not make are mine or another agent's work in progress.
+Don't stop, ask or warn me about them. Just work with them:
+
+- Treat them as the current state of the code and build on top of them. If they are
+  in a file you need, read them first and keep them.
+- Never undo or hide them: no `stash`, `reset`, `checkout`, `restore` or `clean` on
+  them, and don't switch branch if that would disturb them.
+- Don't commit them unless I ask. If yours and theirs are in the same file, leave
+  theirs out of the commit, and ask me if you can't separate them.
+- Tell me only if they get in your way, for example they break the build or a test.
+  Say it in one line and carry on with whatever you still can do.
+
 ## Always answer in English
 
 Whatever language I write in, answer in English. Only use another language if I
