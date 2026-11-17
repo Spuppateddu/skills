@@ -127,6 +127,23 @@ A new panel is only justified by a **different shape**, never a different word. 
 of 7 checkboxes each with a memory line next to it is a new shape. A list of named things
 with a description is not — that is `EntityList`.
 
+### How a sheet looks: pencil inputs, compact rows
+
+This holds for a new sheet **and** for every change to an existing one.
+
+- **Every editable value is a pencil input.** It shows the value as text with a pencil
+  icon (`FaPencilAlt`); a click turns it into an input. Use `ClickToEditInput` for one
+  value, `ClickToEditSelect` for a choice, `CurrentMaxInput` for a current / max pair
+  (hit points, stress, mana), `ClickToEditTitleDescription` for a name + text. Never an
+  always-open `<Input>` on the sheet. The pencil button has `aria-label` and `title` in
+  Italian (`Modifica <label>`), as the icon-only buttons rule in `AGENTS.MD` says.
+- **Compress attributes and skills: several per row when they fit.** Short values (a
+  number, a few dots, a current / max) go in a grid, not one per line. Use
+  `DefaultStatistiche` with `columns={2 | 3}` (it also merges `<key>` and `<key>_max`
+  into one `CurrentMaxInput`); do the same for skills and for any new panel. One item per
+  row only when the item holds long text. On a phone the grid can drop to one column.
+- The plan says, per panel, which pencil component it uses and how many per row.
+
 **Keep the logic out of the component.** Game data lives in
 `gdr-companion-frontend/constants/<game_slug>/*.ts` as frozen exported arrays. The panel
 reads the array and renders it. A panel that hardcodes a list, a length or a rule is

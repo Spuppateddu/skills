@@ -115,6 +115,11 @@ because that port is taken, STOP and ask the user before changing any port, `.en
   `gdr-` classes. Colour literals only in `styles/tokens.css`; everywhere else
   `var(--…)`. State and variant travel as `data-*` attributes, never as class names.
 - Components stay under ~600 lines. Split if they grow past that.
+- **Every editable value on the sheet is a pencil input** (`ClickToEditInput`,
+  `ClickToEditSelect`, `CurrentMaxInput`, `ClickToEditTitleDescription`), never an
+  always-open `<Input>`. The pencil button has `aria-label` and `title` in Italian.
+- **Attributes and skills are compact: several per row when they fit** (a grid of 2 or 3,
+  e.g. `DefaultStatistiche` with `columns={3}`). One per row only for long text.
 - Backend PHP files start with `declare(strict_types=1);`.
 - **No new i18n dictionary for this game.** `hooks/useGameTranslation.ts` has a hardcoded
   `GameSlug` union that stops at `tenebrae`; `ultima_torcia`, `kulthos`, `ronin` and

@@ -17,7 +17,7 @@ tab `name`.
 | Component | Renders | Props you can relabel |
 |-----------|---------|-----------------------|
 | `DefaultGeneral` | name, age, avatar | — |
-| `DefaultStatistiche` | one row per **attribute in the database** for this game | none needed — driven by `attributes` |
+| `DefaultStatistiche` | the **attributes in the database** for this game; with `columns={2\|3}` a compact grid of pencil inputs, `<key>` + `<key>_max` merged into one `CurrentMaxInput` | `columns` — always set it (SKILL.md, "pencil inputs, compact rows") |
 | `DefaultSkills` | one row per **skill in the database** for this game | none needed — driven by `skills` |
 | `DefaultWeapons` | list of name + description | — |
 | `DefaultArmors` | list of name + description | — |
@@ -84,7 +84,10 @@ Build a new panel out of these. A panel that reimplements one of them is wrong.
 | `StringList` | add/remove list of plain strings | `label`, `items`, `onChange` |
 | `TitleDescriptionList` | add/remove list of title + description | `titlePlaceholder`, `descriptionPlaceholder`, `emptyMessage` |
 | `AttributeModifierInput` | a −N…+N stepper | `value`, `onChange`, `min`, `max` |
-| `ClickToEditInput` | a labelled value that turns into an input when clicked | `label`, `value`, `onChange`, `type` |
+| `ClickToEditInput` | a labelled value with a pencil; turns into an input when clicked. **The default for any editable value** | `label`, `value`, `onChange`, `type` |
+| `ClickToEditSelect` | same, for a choice from a list | — |
+| `CurrentMaxInput` | a current / max pair as one pencil value, coloured by what is left | `label`, `current`, `max`, `onCurrentChange`, `onMaxChange`, `maxLocked` |
+| `ClickToEditTitleDescription` | a name + text, pencil to edit | — |
 | `CreatableSelect` | pick from a list **or** type your own | `options`, `onChange(value, isCustom)`, `createLabel` |
 | `SearchableSelect` | pick from a long list | `options`, `value`, `onChange`, `allowClear` |
 | `CollapsibleSection` | a foldable block inside a tab | `title`, `defaultOpen`, `flush` |
